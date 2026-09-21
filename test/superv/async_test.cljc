@@ -3,7 +3,7 @@
             [clojure.core.async :as async :refer [<! >! go chan close! alt! timeout chan close! take! to-chan! put! pub sub onto-chan!
                                                   #?@(:clj [<!! >!!])]]
             [superv.async :refer [<? <?- >? S go-try go-try- <<! <<? <?* concat>> partition-all>> count> pmap>> alt? alts? restarting-supervisor go-super go-for map->TrackingSupervisor on-abort put? chan-super go-loop-try go-loop-super
-                                  #?@(:clj [<<!! <<?? <?? <!!* <??* thread-try thread-super reduce< <?? chan-super])]]))
+                                  #?@(:clj [<<!! <<?? <?? <!!* <??* thread-try thread-super reduce< <?? chan-super go-loop-try-])]]))
 
 (defn test-async
   "Asynchronous test awaiting ch to produce a value or close."
@@ -243,6 +243,16 @@
                                         ;; TODO - Better JS error. In cljs this never terminates without an explicit thrown error
                                      :cljs (throw (js/Error. "Oops")))
                                   (recur r))))))))
+
+;; go-loop-try- is clj-only, like go-try-
+#?(:clj
+   (deftest test-go-loop-try-
+     (test-async
+      (go
+        (is (= 10 (<? S (go-loop-try- [i 0 acc 0]
+                          (if (< i 5)
+                            (recur (inc i) (+ acc i))
+                            acc)))))))))
 
 ;; go-super
 (deftest test-go-super

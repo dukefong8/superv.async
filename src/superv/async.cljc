@@ -209,7 +209,11 @@
      "Loop binding for go-try-."
      {:style/indent 2}
      [bindings & body]
-     `(go-try- ~S (loop ~bindings ~@body))))
+     ;; NOTE: splice the S *symbol* (syntax-quote qualifies it), not the var's
+     ;; value. Unquoting ~S embeds the live dummy-supervisor instance
+     ;; (channels, atoms) in the expansion, which the JVM tolerates as a
+     ;; constant but Jolt cannot compile into code.
+     `(go-try- S (loop ~bindings ~@body))))
 
 (defmacro go-try
   "Asynchronously executes the body in a go block. You can provide catch and
